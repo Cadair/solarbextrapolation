@@ -19,6 +19,10 @@ class Preprocessors(object):
     compensate for extrapolator assumptions, such as the force-free assumption
     that is assumed in many extrapolations, but isn't true in the photosphere
     where magnetiogram observations are generally taken.
+    Note that the preprocessor specific meta data will be added to the original
+    meta data.
+    Also values in the original meta data may need to be adjusted to compensate
+    for changes in the image data, for example max/man/ave values.
     """
     def __init__(self, map_data, **kwargs):
         """Method for creating a preprocessor object, using a sunpy map.
@@ -39,7 +43,6 @@ class Preprocessors(object):
         return map_output
 
     def preprocess(self):
-        
         """
         Method to be called to run the preprocessor.
         Times the process and saves output where applicable.
