@@ -17,7 +17,7 @@ from solarbextrapolation.extrapolators import PotentialExtrapolator
 from solarbextrapolation.example_data_generator import generate_example_data, dummyDataToMap
 
 # The input parameters:
-lis_grid_shapes = [ [ 100, 100, 100 ] ]#, [ 20, 20, 20 ]]#, [ 30, 30, 30 ]]#, [ 100, 100, 100 ]]#[ 10, 10, 10 ],[ 50, 50, 50 ], [ 100, 100, 100 ], [ 200, 200, 200 ] ]
+lis_grid_shapes = [ [ 20, 20, 20 ] ]#, [ 20, 20, 20 ]]#, [ 30, 30, 30 ]]#, [ 100, 100, 100 ]]#[ 10, 10, 10 ],[ 50, 50, 50 ], [ 100, 100, 100 ], [ 200, 200, 200 ] ]
 xrange = u.Quantity([ -10.0, 10.0 ] * u.arcsec)
 yrange = u.Quantity([ -10.0, 10.0 ] * u.arcsec)
 zrange = u.Quantity([ 0,     20.0 ] * u.arcsec)
@@ -55,18 +55,27 @@ for extrapolation in lis_datasets:
 
     # Run the extrapolation without numba for each dataset (map and ranges).
     for i in range(0, int_trials):
-        aMap3D = aPotExt.extrapolate(enable_numba=False)
+        aMap3D = aPotExt.extrapolate(method='python')
         lis_times.append(aMap3D.meta['extrapolator_duration'])
-    t.add_row([extrapolation[0], np.round(np.min(lis_times), 2), np.round(np.average(lis_times), 2), np.round(np.std(lis_times), 2)])
+    t.add_row(['(python)'+extrapolation[0], np.round(np.min(lis_times), 2), np.round(np.average(lis_times), 2), np.round(np.std(lis_times), 2)])
 
     # List to store the trial
     lis_times = []
 
     # Run the extrapolation with numba for each dataset (map and ranges).
     for i in range(0, int_trials):
-        aMap3D = aPotExt.extrapolate(enable_numba=True)
+        aMap3D = aPotExt.extrapolate(method='numba')
         lis_times.append(aMap3D.meta['extrapolator_duration'])
     t.add_row(['(numba)'+extrapolation[0], np.round(np.min(lis_times), 2), np.round(np.average(lis_times), 2), np.round(np.std(lis_times), 2)])
+
+    # List to store the trial
+    lis_times = []
+
+    # Run the extrapolation with numba for each dataset (map and ranges).
+    for i in range(0, int_trials):
+        aMap3D = aPotExt.extrapolate(method='cython')
+        lis_times.append(aMap3D.meta['extrapolator_duration'])
+    t.add_row(['(cython)'+extrapolation[0], np.round(np.min(lis_times), 2), np.round(np.average(lis_times), 2), np.round(np.std(lis_times), 2)])
 
 # Show the data table
 print t

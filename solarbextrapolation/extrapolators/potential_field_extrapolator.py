@@ -6,19 +6,15 @@ Created on Fri Jun 12 13:01:54 2015
 """
 
 import numpy as np
-import sunpy.map as mp
-import astropy.units as u
 
 # Module Imports
-#from classes import *
-#from solarbextrapolation.utilities import *
 from solarbextrapolation.extrapolators import Extrapolators
 from solarbextrapolation.utilities import si_this_map
 from solarbextrapolation.map3dclasses import Map3D
-#from solarbextrapolation.visualisation_functions import visualise
 
 
 __all__ = ['PotentialExtrapolator']
+
 
 class PotentialExtrapolator(Extrapolators):
     """
@@ -48,7 +44,7 @@ class PotentialExtrapolator(Extrapolators):
         self.Dy = (self.yrange[1] - self.yrange[0]) / self.shape[1]
         self.Dz = (self.zrange[1] - self.zrange[0]) / self.shape[2]
 
-    def _extrapolation(self, enable_numba=True, **kwargs):
+    def _extrapolation(self, method='python', **kwargs):
         """
         Override the primary execution method from the extrapolation class.
         The process is to extrapolate the potential (scalar) field (phi) and
@@ -56,19 +52,11 @@ class PotentialExtrapolator(Extrapolators):
         (Bxyz).
         """
 
-        if enable_numba:
-            # Test that numba and the numba'ed extrpolator can be imported
-            try:
-                import numba
-                from potential_field_extrapolator_numba import phi_extrapolation_numba
-            except ImportError:
-                enable_numba = False
+        phi = self._extrapolate_phi(method, **kwargs)
 
-        phi = self._extrapolate_phi(enable_numba, **kwargs)
-
-        if enable_numba:
-            from numba.decorators import autojit
-            determine_vec = autojit(self._determine_vec)
+        if method == 'numba':
+            from numba import jit
+            determine_vec = jit(self._determine_vec, nopython=True)
         else:
             determine_vec = self._determine_vec
 
@@ -77,25 +65,27 @@ class PotentialExtrapolator(Extrapolators):
 
         return Map3D(Bxyz, self.meta, xrange=self.xrange, yrange=self.yrange, zrange=self.zrange)
 
-    def _extrapolate_phi(self, enable_numba, debug=False, **kwargs):
+
+    def _extrapolate_phi(self, method, **kwargs):
         """
         A function to extrapolate the magnetic field above the given boundary.
         Assumes the input B-field boundary data is near normal (the image must
         be near the centre of the HMI data).
         P183 (5.2.28)
         """
-        if debug:
-            print "extrapolatePhi({},{},{})".format(self.map_boundary_data.data.shape, inZ, debug)
 
         # Parameters
         arr_boundary = self.map_boundary_data.data
 
-        print(enable_numba)
-        if enable_numba:
+        print(method)
+        if method == 'numba':
             from .potential_field_extrapolator_numba import phi_extrapolation_numba as phi_extrapolation
+        elif method == 'cython':
+            from .potential_field_extrapolator_cython import phi_extrapolation_cython as phi_extrapolation
         else:
             from .potential_field_extrapolator_python import phi_extrapolation_python as phi_extrapolation
 
+        print(phi_extrapolation)
         return phi_extrapolation(arr_boundary, self.shape, self.Dx.value, self.Dy.value, self.Dz.value)
 
 
