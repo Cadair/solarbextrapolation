@@ -54,6 +54,10 @@ coverage.xml
 docs/_build/
 docs/api/
 solarbextrapolation/version.py
+docs/auto_examples/
+docs/generated/
+docs/modules/
+
 
 # PyBuilder
 target/

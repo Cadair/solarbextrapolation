@@ -50,6 +50,38 @@ conf = ConfigParser()
 conf.read([os.path.join(os.path.dirname(__file__), '..', 'setup.cfg')])
 setup_cfg = dict(conf.items('metadata'))
 
+# -- Options for the Sphinx gallery -------------------------------------------
+
+try:
+    import sphinx_gallery
+    extensions += ["sphinx_gallery.gen_gallery"]
+
+    sphinx_gallery_conf = {
+        'backreferences_dir':
+        'generated{}modules'.format(os.sep),  # path to store the module using example template
+        'filename_pattern':
+        '^((?!skip_).)*$',  # execute all examples except those that start with "skip_"
+        'examples_dirs': os.path.join('..', 'examples'),  # path to the examples scripts
+        'gallery_dirs': os.path.join('generated',
+                                     'gallery'),  # path to save gallery generated examples
+        'default_thumb_file': os.path.join('.', 'logo', 'sunpy_icon_128x128.png'),
+        'reference_url': {
+            'sunpy': None,
+            'astropy': 'http://docs.astropy.org/en/stable/',
+            'matplotlib': 'http://matplotlib.org/',
+            'numpy': 'http://docs.scipy.org/doc/numpy/',
+        },
+        'abort_on_example_error': True
+    }
+
+except ImportError:
+
+    def setup(app):
+        app.warn('The sphinx_gallery extension is not installed, so the '
+                 'gallery will not be built.  You will probably see '
+                 'additional warnings about undefined references due '
+                 'to this.')
+
 # -- Read the Docs Setup  -----------------------------------------------------
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -65,9 +97,6 @@ if on_rtd:
 else:
     # -- Sphinx Gallery ------------------------------------------------------------
 
-    extensions += ['sphinx_gallery.gen_gallery']
-
-    #html_static_path = ['_static', sphinxgallery.path_static()]
     try:
         from mayavi import mlab
         find_mlab_figures = True
@@ -75,9 +104,7 @@ else:
     except ImportError:
         find_mlab_figures = False
 
-    sphinx_gallery_conf = {'find_mayavi_figures': find_mlab_figures,
-                        'gallery_dirs': 'auto_examples',
-                        'examples_dirs': '../examples'}
+    sphinx_gallery_conf.update({'find_mayavi_figures': find_mlab_figures})
 
 
 # -- General configuration ----------------------------------------------------
@@ -118,7 +145,7 @@ version = package.__version__.split('-', 1)[0]
 # The full version, including alpha/beta/rc tags.
 release = package.__version__
 
-
+extensions.remove('sphinx.ext.imgmath')
 extensions += ['sphinx.ext.mathjax']
 
 # -- Options for HTML output ---------------------------------------------------

@@ -52,11 +52,11 @@ class AnalyticalModel(object):
 
         # Default 3D magnetic field
         #X,Y,Z = np.zeros(self.shape.value), np.zeros(self.shape.value), np.zeros(self.shape.value)
-        npField = np.zeros([3]+self.shape.value)
+        npField = np.zeros([3]+list(np.array(self.shape.value, dtype=np.int)))
         self.field = Map3D(npField, self.meta)
 
         # Default magnetic field on boundary
-        magnetogram = np.zeros(self.shape[0:2].value)
+        magnetogram = np.zeros(np.array(self.shape[0:2].value, dtype=np.int))
         magnetogram_header  = {'ZNAXIS': 2, 'ZNAXIS1': self.shape[0].value, 'ZNAXIS2': self.shape[1].value}
         self.magnetogram = sunpy.map.Map((magnetogram, magnetogram_header))
 
@@ -67,7 +67,7 @@ class AnalyticalModel(object):
         model implementations.
         """
         # Model code goes here.
-        arr_4d = np.zeros([self.map_boundary_data.data.shape[0], self.map_boundary_data.data.shape[1], 1, 3])
+        arr_4d = np.zeros([int(self.map_boundary_data.data.shape[0]), int(self.map_boundary_data.data.shape[1]), 1, 3])
 
         # Turn the 4D array into a Map3D object.
         map_output = Map3D( arr_4d, self.meta, xrange=self.xrange, yrange=self.yrange, zrange=self.zrange, xobsrange=self.xrange, yobsrange=self.yrange )
@@ -153,8 +153,9 @@ if __name__ == '__main__':
             self.meta['analytical_model_routine'] = 'Ones Model'
 
             # Generate a trivial field and return (X,Y,Z,Vec)
-            arr_4d = np.ones(self.shape.value.tolist() + [3])
-            return Map3D( arr_4d, self.meta )
+            outshape = list(np.array(self.shape.value, dtype=np.int)) + [3]
+            arr_4d = np.ones(outshape)
+            return Map3D(arr_4d, self.meta)
 
 
     # Setup an anylitical model

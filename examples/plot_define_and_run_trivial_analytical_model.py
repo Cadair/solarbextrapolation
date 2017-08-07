@@ -65,7 +65,7 @@ class AnaOnes(AnalyticalModel):
         self.meta['analytical_model_routine'] = 'Ones Model'
 
         # Generate a trivial field and return (X,Y,Z,Vec)
-        arr_4d = np.ones(self.shape.value.tolist() + [3])
+        arr_4d = np.ones(np.array(self.shape.value, dtype=np.int).tolist() + [3])
         self.field = arr_4d
 
         # Extract the LoS Magnetogram from this:
